@@ -20,11 +20,25 @@ reaches only t=2.54. The result does not survive the correction, and it is not
 robust across slices (year-level results weaken materially). **Treated as no
 edge.**
 
-**Yellow Box / Market Profile.** Documented in `YELLOW_BOX_NOTES.md`. The
-literal specification places TP1 roughly 7R from a stop set by a 15-minute
-wick, so only ~8% of trades ever reach the target — the target is not scaled to
-the risk. Reworking the target structure (`r_multiple`, `scale`) does not
-produce a surviving edge. **Treated as no edge.**
+**Yellow Box / Market Profile.** Documented in `YELLOW_BOX_NOTES.md`.
+**PF 0.84 over n=892** across MES+MNQ+MGC — negative in every symbol and both
+directions. 71.5% of trades stop out, and 55% of those stop on the entry bar
+itself, which says the stop placement (the retest swing extreme) sits exactly
+where price is still oscillating. The literal spec also puts TP1 a median ~7R
+from that stop, so only 8.7% of trades ever reach it — the target is not scaled
+to the risk. **Treated as no edge.**
+
+Two results from the follow-up sweeps are worth more than the verdict:
+
+- **A 48-config walk-forward sweep returned 0/48 profitable on train and 48/48
+  profitable on test.** A unanimous sign flip is a regime artifact, not a
+  discovery — the train/test boundary happened to land at 2025-12-15, and
+  quarterly P&L is negative through 2025 and positive across 2026. Best test
+  t-stat anywhere in that grid was 1.70 against a Bonferroni bar of 3.51.
+- **Making the target reachable made performance worse.** Rescaling TP1 to 1.0R
+  lifted the hit rate to 42% but produced the *worst* profit factor of any
+  target mode (0.81), versus 0.93 for the original unreachable target. Cutting
+  winners short cost more than the low hit rate did.
 
 Both conclusions are the deliberate output of adversarial auditing rather than
 a failure to find a good configuration. A harness that only ever confirms its
@@ -32,9 +46,17 @@ hypotheses is not measuring anything.
 
 ## Known issues
 
-- **MGC contract-roll bug (unfixed).** The cached MGC data has a contract-roll
-  defect; gold results are unreliable until the cache is rebuilt. MES and MNQ
-  are unaffected. Do not draw conclusions from MGC output.
+- **MGC cache is roughly half fabricated (unfixed).** Every *even* calendar
+  month in `data/MGC_5min.csv` has median volume 0 and 54–71% zero-volume bars;
+  odd months are normal. Cause: gold's actively traded contracts are the even
+  months, but IBKR lists MGC monthly, and `_list_contract_months` keeps every
+  listed month and assigns each a front-month roll window — so illiquid
+  odd-month contracts backfill the preceding even month with dead data. MES and
+  MNQ are quarterly, so every listed contract is liquid and the bug never
+  surfaces there (0/26 bad months each). Fixing it needs a per-symbol
+  active-months filter plus an MGC refetch. **Any MGC result in this repo
+  predates that fix and is suspect**, including the audit's finding that MGC was
+  a significant loser (t=−2.04).
 - Two upstream scanner bugs this backtester works around rather than inherits:
   MNQ point value is **$2** (the micro), not the $20 of the E-mini NQ; and
   `GLOBEX` is no longer a valid IBKR exchange code (use `CME` / `COMEX`).
@@ -109,8 +131,9 @@ and cached data are gitignored — rerun to regenerate.
 
 ## Limitations
 
-- ~45 days of cached 5-min bars is a short sample; conclusions about rare
-  regimes are not supportable from it.
+- The sample is 543 sessions (roughly 2024-06 through 2026-07). That is enough
+  to reject a weak edge but not enough to characterize rare regimes, and the
+  per-bucket counts in the regime analysis get small fast.
 - Fills are modeled, not real. Stops are assumed to fill at the stop level plus
   configured slippage, which flatters gap-through scenarios.
 - Position scaling assumes a divisible position; at 1 contract you cannot take
