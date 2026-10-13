@@ -1,0 +1,9 @@
+pandas>=2.0
+numpy>=1.24
+pytz>=2023.3
+scipy>=1.10
+
+# Only needed to FETCH bars (`backtest_futures.py --fetch`), which requires a
+# running IBKR TWS/Gateway session. Backtesting against cached data in ./data/
+# does not import it.
+ib_insync>=0.9.86

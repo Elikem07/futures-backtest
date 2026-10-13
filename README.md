@@ -54,7 +54,7 @@ hypotheses is not measuring anything.
 ## Install
 
 ```bash
-pip install ib_insync pandas numpy pytz
+pip install -r requirements.txt
 ```
 
 Python 3.11+ (`tomllib`). Fetching data requires a running IBKR TWS/Gateway
