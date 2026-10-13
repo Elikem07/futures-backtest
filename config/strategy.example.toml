@@ -1,0 +1,109 @@
+# Futures backtest parameters — EXAMPLE / PLACEHOLDER VALUES
+#
+# Committed to the repository to document the configuration schema. The
+# numbers below are neutral placeholders, not a tradeable configuration.
+#
+# To run with real parameters:
+#   cp config/strategy.example.toml config/strategy.toml
+# then edit config/strategy.toml, which is gitignored.
+
+[session]
+rth_start = "09:30"
+rth_end   = "16:00"
+power_windows = [
+    { start = "09:30", end = "10:30" },
+    { start = "15:00", end = "16:00" },
+]
+
+[costs]
+commission_rt = 0.00   # PLACEHOLDER — set your broker rate   # round-turn $ per contract
+roll_buffer_days = 6   # roll ~1 week before expiry
+
+[signals]
+pdl_window_start  = "09:30"   # Vol Div Short PDL is only valid inside this window
+pdl_window_end    = "12:00"
+pdl_proximity_tol = 0.0  # PLACEHOLDER  # how close a bar must come to the prior day's RTH low
+
+[scoring]
+vwap_setup   = 0
+other_setup  = 0
+aligned      = 0
+no_whipsaw   = 0
+power_hour   = 0
+max_score    = 5
+
+# ── Vol-divergence / multi-setup simulation (backtest_futures.Config) ────────
+[sim]
+vol_breakout     = 99.0   # PLACEHOLDER    # min vol_ratio for overnight breakout / ORB
+vol_div          = 99.0   # PLACEHOLDER    # min vol_ratio for the VWAP-divergence setup
+dec8_min         = 99      # PLACEHOLDER      # declining bars required of 4 step-changes (5-bar window)
+dec6_min         = 99      # PLACEHOLDER      # declining bars required of 6
+vwap_tol         = 0.0   # PLACEHOLDER  # max |close-vwap|/vwap for VWAP setups
+min_score        = 99      # PLACEHOLDER
+tgt1_r           = 1.0     # PLACEHOLDER
+tgt2_r           = 1.0     # PLACEHOLDER
+mgmt             = "scale"   # "scale" = 50% @T1 + BE trail, "full" = 100% @T1
+risk_per_trade   = 0.0    # PLACEHOLDER
+max_contracts    = 1       # PLACEHOLDER
+max_daily_trades = 0    # PLACEHOLDER
+entry_cutoff     = "15:45"
+eod_flat         = "15:45"
+setups           = ["breakout", "divergence", "orb", "vwap", "sma"]
+
+# ── Yellow Box / Market Profile strategy (strategy_yellow_box.Config) ────────
+[yellow_box]
+n_rows             = 10     # PLACEHOLDER     # TPO histogram rows spanning the box day's range
+va_pct             = 0.50   # PLACEHOLDER   # value-area coverage
+avg_range_lookback = 14     # trailing sessions averaged for the TP1 target
+risk_cap           = 0.0  # PLACEHOLDER  # reject signals whose stop distance * point_value exceeds this
+eod_flat           = "15:45"
+stop_buffer_frac   = 0.0
+target_mode        = "range"   # "range" | "r_multiple" | "scale"
+tgt1_r             = 1.0     # PLACEHOLDER
+scale_frac         = 1.0  # PLACEHOLDER
+sizing             = "fixed"   # "fixed" | "risk" | "account"
+fixed_contracts    = 1
+risk_per_trade     = 0.0   # PLACEHOLDER
+max_contracts      = 1       # PLACEHOLDER
+account_start      = 1000.0
+risk_pct           = 0.0  # PLACEHOLDER   # fraction of CURRENT equity risked per trade
+day_margin         = 50.0   # intraday margin per MES lot
+allow_min_one      = true
+
+# ── ATR breakout / regime study (strategy_breakout_atr.py) ──────────────────
+[breakout_atr]
+eod_flat            = "15:45"
+atr_bar_lookback    = 20     # rolling ATR window
+atr_regime_lookback = 60     # trailing sessions for the regime threshold
+atr_regime_quantile = 0.50  # PLACEHOLDER   # "high" = top quartile vs trailing history
+risk_cap            = 0.0  # PLACEHOLDER
+vol_min             = 99.0   # PLACEHOLDER
+
+[stats]
+rng_seed = 42
+n_boot   = 5000
+
+[sweep]
+account = 1000.0
+
+[sweep.grid]
+vol_breakout = [99.0]   # PLACEHOLDER
+vol_div      = [99.0]   # PLACEHOLDER
+vwap_tol     = [0.0]    # PLACEHOLDER
+min_score    = [99]     # PLACEHOLDER
+tgt1_r       = [1.0]    # PLACEHOLDER
+mgmt         = ["full", "scale"]
+
+# Contract specifications — exchange reference data, not strategy parameters.
+[specs.MES]
+exchange = "CME"
+point_value = 5.0
+tick = 0.25
+[specs.MNQ]
+exchange = "CME"
+point_value = 2.0
+tick = 0.25
+[specs.MGC]
+exchange = "COMEX"
+point_value = 10.0
+tick = 0.10

@@ -1,0 +1,52 @@
+# ── Secrets & local configuration ─────────────────────────────────────────────
+# Real strategy parameters live here and must never be committed.
+# Only the *.example.toml files belong in version control.
+config/strategy.toml
+config/playbook.toml
+config/costs.toml
+*.local.toml
+.env
+.env.*
+!.env.example
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ── Market data, caches & run artifacts ──────────────────────────────────────
+# Vendor data is large and often licensed; regenerate it locally.
+data/
+historical_cache/
+*.csv
+*.parquet
+*.feather
+*.db
+*.sqlite3
+
+# ── Logs & generated reports ─────────────────────────────────────────────────
+*.log
+*.out
+*.html
+optimization_results.json
+best_config.json
+
+# ── OS / editors ─────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# ── Raw sweep output ─────────────────────────────────────────────────────────
+# Machine stdout from parameter sweeps: every tested combination and its PF.
+# The conclusions live in the audit markdown instead.
+edge_out.txt
+sweep_v2_out.txt
+*_out.txt
